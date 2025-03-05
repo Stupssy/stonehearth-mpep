@@ -1,102 +1,109 @@
-# Multiplayer Enhancements
+# Stonehearth Multiplayer Enhancements
 
-This mod focuses on being able run a headless server and extending multiplayer modes by adding a "game master" host.
-
-Save a game and update the host field in server_metadata.json with your session information. Your player_id is either develop_1 or steam_1
-
-    {
-        'player_id': 'develop_1',
-        'client_id': 'GUID',
-        'provider': 'develop
-    }
-
-radiant:client:save_game will trigger a save on the server if the client is connected as a 'host'. You can specify your host in an existing save game by modifying server_metadata.json with the correct user session information.
-
-radiant:client:restart will trigger a restart of the game on the server side! the new_game event will kick in but the headless:init wont be triggered. 
-
-To trigger a load on the server without restarting the server program. You can call 'radiant:client:load_game_async'. This however, will disconnect the client. The client will need to be restarted. 
-
-# Features
-
-- Remote players can join before host player places his camp
-- Auto-enable multiplayer settings when running a headless server with auto-generation
-
-# Task List
-
-## Required Features 
-These features will set the base of the mod to allow headless server multiplayer functionality.
-
-- [ ] Headless Game Saving - Possible but only in pre-loaded save games
-- [ ] Auto-Save feature
-- [X] Allow headless server to auto-generate world
-- [X] Assign first player to become host
-- [X] Setup multiplayer settings with auto-generate world
-- [ ] On loading of existing save, turn on the multiplayer settings and max_player settings
-- [ ] On loading of existing save, delete the 'host' player
-- [X] Pass arguments to the executable rather than through json config (There are limits)
+This mod focuses on enhancing Stonehearth's multiplayer capabilities with a primary focus on headless server functionality, game master features, and multiplayer performance optimization.
 
 ## Main Features
 
-- [X] Allow clients to join before host places camp
-- [ ] Client Launcher
-- [ ] Game Master mode, allow a player to act as a game master creating their own story by spawning entities and controlling them
-- [ ] Allow host client to trigger the save functionality (Only pre-loaded save games)
-- [X] When client connects, update their multiplayer settings to show multiplayer is enabled on client and the number of max_players
-- [ ] Allow client to specify IP address to connect to.
-- [ ] Headless Server Side Launcher which allows you to specify world generation settings or the save file to load
+- **Headless Server Support**: Run a dedicated server without the graphical interface
+- **Enhanced Player Roles**: First player becomes host or specify custom host in save files
+- **Pre-Camp Joining**: Remote players can join before host player places a camp
+- **Multiplayer Settings**: Auto-configuration of multiplayer settings for headless servers
+- **Building System Enhancements**: Improved building functionality for remote clients
+- **Performance Optimizations**: Reduced lag and improved responsiveness in multiplayer sessions
+- **Entity Management**: Smarter entity processing to improve overall game performance
+- **Network Traffic Reduction**: Optimized data synchronization between server and clients
 
-## Research Features
+## Installation
 
-- [ ] Is there a C++ callback from lua to start a new server while in game?
-- [ ] Is there a C++ callback from lua to have the client connect or restart the connection?
-- [ ] Can the host generate a map while the client is connected and allowed to modify the generation or even pick the drop location?
+1. Subscribe to the mod on Steam Workshop (File ID: 1617901275)
+   OR download the release and extract to your Stonehearth mods folder
+2. For headless server setup, follow the configuration instructions below
 
-# Notes
+## Headless Server Setup
 
-Useful notes that may be useful
+### Using a Save Game
 
-## General
+1. Save a game in single player mode
+2. Modify the `server_metadata.json` file in the save folder:
+   ```json
+   {
+       "player_id": "develop_1",
+       "client_id": "GUID",
+       "provider": "develop"
+   }
+   ```
+   Your player_id will be either `develop_1` or `steam_1` depending on your game version
 
-getmetatable(obj) to see metatable - may be useful for c structs
+3. Launch the server using the `server.bat` file with the correct save ID
 
-print(inspect(getmetatable(someuserdata)))
+### Using Auto-Generation
 
-## Command-Line Arguments
+1. Edit the `server.bat` file to configure:
+   - Server settings (port, IP)
+   - World generation parameters (seed, size, biome)
+   - Game mode settings
+
+2. Uncomment the desired world generation parameters in `server.bat`
+
+3. Run the batch file to start the headless server
+
+## Commands
+
+- `radiant:client:save_game` - Triggers a save on the server if the client is connected as a host
+- `radiant:client:restart` - Restarts the game on the server side
+- `radiant:client:load_game_async` - Loads a game on the server without restarting (will disconnect clients)
+
+## Known Issues
+
+- Headless game saving is only possible with pre-loaded save games
+- When setting custom IP addresses, avoid using characters that aren't numbers and periods
+- Setting `multiplayer.remote_server.ip` with invalid characters can lock up the game
+
+## Development Status
+
+### Completed Features
+- ✅ Headless server with auto-generation
+- ✅ First player auto-assigned as host
+- ✅ Multiplayer settings auto-configuration
+- ✅ Pre-camp client joining
+- ✅ Client-side multiplayer settings synchronization
+
+### Planned Features
+- ⬜ Auto-save functionality
+- ⬜ Complete headless game saving support
+- ⬜ Game Master mode for story creation
+- ⬜ IP address specification in client
+- ⬜ Headless server launcher with UI
+- ⬜ Dynamic host transfer
+- ⬜ Client launcher application
+- ⬜ Advanced pathfinding optimization
+- ⬜ Entity priority system based on player proximity
+- ⬜ Synchronization controls for reduced network load
+- ⬜ Resource balancing across settlements
+- ⬜ Performance monitoring tools
+
+## Technical Notes
+
+The mod works by overriding key parts of Stonehearth's multiplayer functionality:
+- Monkey patches the building client service
+- Overrides the host player ID system
+- Enhances server metadata handling
+
+### Command Line Arguments
 
 Working arguments:
-* multiplayer.server.port
-* multiplayer.headless.enabled
-* multiplayer.headless.saveid
-* multiplayer.remote_server.enabled
-* multiplayer.remote_server.port
+- `multiplayer.server.port`
+- `multiplayer.headless.enabled`
+- `multiplayer.headless.saveid`
+- `multiplayer.remote_server.enabled`
+- `multiplayer.remote_server.port`
 
-the commented out arguments in server.bat are ones that do not work properly.
+See `server.bat` for examples of usage and commented arguments that are not fully implemented.
 
-multiplayer.remote_server.ip doesn't properly work but it does change the ip if the user config doesn't already contain a value
+## Credits
 
-## World Generation
+Created by Bolune (Steven Sinakhot)
 
-In the stonehearth mod, there is already a hook for radiant:headless:init. It defaults by retrieving multiplayer.headless.options for the world generation.
-Example setting:
+## License
 
-    {
-        "seed" : 523423443,
-        "x" : 0,
-        "y" : 0,
-        "width" : 10,
-        "height" : 8,
-        "biome_src" : "temperate",
-        "game_mode" : "hard"
-    }
-
-## Saving the game
-'radiant:client:save_game' only works on client side. There is a check on the server side to only allow 'host' player to execute the save. This is set when the host provider connects or when loaded from the server_metadata.json file for a save_game.
-
-'radiant:server:save' exists, but crashes if called directly to the server. Assembly code kind of indicates this is where the save actually happens.
-
-Maybe able to use dll injection to load in the player_id as host when the game loads.
-
-## Bugs
-
-* if you set multiplayer.remote_server.ip to a value with characters in it, it will lock the game up and not connect to remote server. you can then bind to radiant:new_game to execute your own code on a "black" screen.
-    There is a bug with the existing argument parser where if it sees a number, it tries to read the whole thing as a number else it reads it as a string. Placing quotes around the ip does not work.
+MIT License - See LICENSE file for details
